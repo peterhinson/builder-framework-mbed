@@ -3,7 +3,6 @@ python:
     - "2.7"
 
 env:
-    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/mbed/blinky
     - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/mbed/can PLATFORMIO_CI_BOARDS_ARGS="--board b96b_f446ve"
     - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/mbed/can_interrupt PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f042k6"
     - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/rtos/cmsis/isr PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f031k6"
@@ -22,7 +21,7 @@ install:
     # Don't forget to switch to stable PlatformIO 3.0 (line below) when it will be released
     # - pip install -U platformio
     - pip install -U https://github.com/platformio/platformio/archive/develop.zip
-    - pio platform install https://github.com/platformio/platform-ststm32/archive/feature/new-mbed-builder-integration.zip
+    - pio platform install https://github.com/platformio/platform-ststm32.git#new-mbed-builder-integration
 
 script:
     - if [[ $PLATFORMIO_CI_BOARDS_ARGS ]]; then bash -c 'platformio ci $PLATFORMIO_CI_BOARDS_ARGS'; else platformio ci --board nucleo_l152re --board disco_f100rb; fi
