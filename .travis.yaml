@@ -1,0 +1,28 @@
+language: python
+python:
+    - "2.7"
+
+env:
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/mbed/blinky
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/mbed/can PLATFORMIO_CI_BOARDS_ARGS="--board b96b_f446ve"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/mbed/can_interrupt PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f042k6"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/rtos/cmsis/isr PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f031k6"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/rtos/cmsis/mail PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f042k6"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/rtos/cmsis/semaphore PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f042k6"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/rtos/cmsis/timer PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f031k6"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/usb/device/audio PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f401re"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/usb/device/basic PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f410rb"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/usb/device/keyboard PLATFORMIO_CI_BOARDS_ARGS="--board disco_f407vg"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/usb/device/midi PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f401re"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/usb/device/mouse_keyboard PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f411re"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/usb/device/raw_hid PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f446re"
+    - PLATFORMIO_CI_SRC=~/.platformio/packages/framework-mbed/libraries/tests/usb/device/serial PLATFORMIO_CI_BOARDS_ARGS="--board nucleo_f401re"
+
+install:
+    # Don't forget to switch to stable PlatformIO 3.0 (line below) when it will be released
+    # - pip install -U platformio
+    - pip install -U https://github.com/platformio/platformio/archive/branch/develop.zip
+    - pio platform install https://github.com/platformio/platform-ststm32/archive/feature/new-mbed-builder-integration.zip
+
+script:
+    - if [[ $PLATFORMIO_CI_BOARDS_ARGS ]]; then bash -c 'platformio ci $PLATFORMIO_CI_BOARDS_ARGS'; else platformio ci --board nucleo_l152re --board disco_f100rb; fi
