@@ -21,7 +21,7 @@ env:
 install:
     # Don't forget to switch to stable PlatformIO 3.0 (line below) when it will be released
     # - pip install -U platformio
-    - pip install -U https://github.com/platformio/platformio/archive/branch/develop.zip
+    - pip install -U https://github.com/platformio/platformio/archive/develop.zip
     - pio platform install https://github.com/platformio/platform-ststm32/archive/feature/new-mbed-builder-integration.zip
 
 script:
