@@ -210,6 +210,8 @@ env.Replace(
 
 env.Append(LIBS=["c"])  # temporary fix for linker issue
 
+env.Replace(AS="$CC", ASCOM="$ASPPCOM")
+
 # restore external build flags
 if "build.extra_flags" in env.BoardConfig():
     env.ProcessFlags(env.BoardConfig().get("build.extra_flags"))
