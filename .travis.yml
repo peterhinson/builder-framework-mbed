@@ -21,7 +21,7 @@ install:
     # Don't forget to switch to stable PlatformIO 3.0 (line below) when it will be released
     # - pip install -U platformio
     - pip install -U https://github.com/platformio/platformio/archive/develop.zip
-    - pio platform install https://github.com/platformio/platform-ststm32.git#feature/new-mbed-builder-integration
+    - pio platform install https://github.com/platformio/platform-ststm32.git#feature/new-mbed-builder-integration --with-package framework-mbed
 
 script:
     - if [[ $PLATFORMIO_CI_BOARDS_ARGS ]]; then bash -c 'platformio ci $PLATFORMIO_CI_BOARDS_ARGS'; else platformio ci --board nucleo_l152re --board disco_f100rb; fi
