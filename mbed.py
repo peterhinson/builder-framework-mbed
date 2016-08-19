@@ -30,6 +30,7 @@ import sys
 from copy import copy
 import xml.etree.ElementTree as ElementTree
 from binascii import crc32
+import json
 from os import walk, listdir
 from os.path import basename, isdir, isfile, join, relpath
 
@@ -136,7 +137,7 @@ def get_mbed_flags(target):
     return _get_flags(parse_eix_file(eix_config_file))
 
 
-def get_mbed_dirs_data(src_dir):
+def get_mbed_dirs_data(src_dir, ignore_dirs=[]):
 
     def _get_mbed_labels():
 
@@ -156,6 +157,7 @@ def get_mbed_dirs_data(src_dir):
         "inc_dirs": list(),
         "empty_dirs": list(),
         "src_dirs": list(),
+        "other_dirs": list(),
         "linker_path": ""
     }
 
@@ -165,12 +167,13 @@ def get_mbed_dirs_data(src_dir):
 
     for root, dirs, files in walk(src_dir):
         for d in copy(dirs):
+            # print d, ignore_dirs
             istargetdir = d.startswith(
                 "TARGET_") and d[7:] not in mbed_labels['TARGET']
             istoolchaindir = d.startswith(
                 "TOOLCHAIN_") and d[10:] not in mbed_labels['TOOLCHAIN']
             if ((istargetdir or istoolchaindir) or
-                    (d == "TESTS") or (d.startswith("."))):
+                    (d == "TESTS") or (d.startswith(".")) or d in ignore_dirs):
                 dirs.remove(d)
             else:
                 target_dirs.append(join(root, d))
@@ -184,6 +187,8 @@ def get_mbed_dirs_data(src_dir):
             result['src_dirs'].append(d)
         elif (any(env.IsFileWithExt(f, SRC_HEADER_EXT) for f in files)):
             result['inc_dirs'].append(d)
+        else:
+            result['other_dirs'].append(d)
         if "TOOLCHAIN_GCC_ARM" in d:
             for f in listdir(d):
                 if f.lower().endswith(".ld"):
@@ -191,6 +196,40 @@ def get_mbed_dirs_data(src_dir):
 
     return result
 
+
+def _find_soft_device_hex(target_dirs):
+
+    if not isfile(join(FRAMEWORK_DIR, "hal", "targets.json")):
+        print("Warning! Cannot find \"targets.json\"."
+              "Firmware will be linked without softdevice binary")
+
+    with open(join(FRAMEWORK_DIR, "hal", "targets.json")) as fp:
+        data = json.load(fp)
+
+    def _find_hex(target_name):
+        assert isinstance(data, dict)
+        if target_name not in data:
+            return None
+        target = data[target_name]
+        if "EXPECTED_SOFTDEVICES_WITH_OFFSETS" not in target:
+            try:
+                return _find_hex(target.get("inherits", [])[0])
+            except IndexError:
+                return None
+        else:
+            return target['EXPECTED_SOFTDEVICES_WITH_OFFSETS'][0]['name']
+
+    softdevice_file = _find_hex(variant)
+    search_paths = target_dirs.get("other_dirs") + target_dirs.get(
+        "inc_dirs") + target_dirs.get("src_dirs")
+    if softdevice_file:
+        for d in search_paths:
+            if softdevice_file in listdir(d):
+                return join(d, softdevice_file)
+
+    sys.stderr.write(
+        "Error: Cannot find SoftDevice binary file for your board!\n")
+    env.Exit(1)
 
 board_type = env.subst("$BOARD")
 variant = MBED_VARIANTS[
@@ -231,7 +270,11 @@ env.Append(
     ]
 )
 
-target_dirs = get_mbed_dirs_data(join(FRAMEWORK_DIR, "hal", "targets"))
+if board_type == "nrf51_dk":
+    target_dirs = get_mbed_dirs_data(
+        join(FRAMEWORK_DIR, "hal", "targets"), ["TARGET_MCU_NRF51822"])
+else:
+    target_dirs = get_mbed_dirs_data(join(FRAMEWORK_DIR, "hal", "targets"))
 
 for inc_dir in target_dirs.get("inc_dirs", []):
     env.Append(CPPPATH=[inc_dir])
@@ -245,8 +288,11 @@ for src_dir in target_dirs.get("src_dirs", []):
 env.Replace(LDSCRIPT_PATH=target_dirs.get("linker_path", ""))
 
 if not env.get("LDSCRIPT_PATH"):
-    sys.stderr.write("Cannot find linker script for your board!")
+    sys.stderr.write("Cannot find linker script for your board!\n")
     env.Exit(1)
+
+if env.get("PIOPLATFORM") == "nordicnrf51":
+    env.Append(SOFTDEVICEHEX=_find_soft_device_hex(target_dirs))
 
 env.BuildSources(
     join("$BUILD_DIR", "FrameworkMbedHalCommon"),
