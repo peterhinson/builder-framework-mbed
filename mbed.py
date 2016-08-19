@@ -200,6 +200,8 @@ mbed_flags = get_mbed_flags(variant)
 
 
 env.Replace(
+    AS="$CC", ASCOM="$ASPPCOM",
+    ASFLAGS=mbed_flags.get("CCFLAGS", [])[:],
     CCFLAGS=mbed_flags.get("CCFLAGS", []),
     CFLAGS=mbed_flags.get("CFLAGS", []),
     CXXFLAGS=mbed_flags.get("CXXFLAGS", []),
@@ -208,9 +210,8 @@ env.Replace(
     CPPDEFINES=[define for define in mbed_flags.get("CPPDEFINES", [])]
 )
 
-env.Append(LIBS=["c"])  # temporary fix for linker issue
 
-env.Replace(AS="$CC", ASCOM="$ASPPCOM")
+env.Append(LIBS=["c"])  # temporary fix for linker issue
 
 # restore external build flags
 if "build.extra_flags" in env.BoardConfig():
@@ -220,20 +221,12 @@ env.ProcessUnFlags(env.get("BUILD_UNFLAGS"))
 # apply user flags
 env.ProcessFlags(env.get("BUILD_FLAGS"))
 
-env.VariantDirWrap(
-    join("$BUILD_DIR", "FrameworkMbedHalApi"),
-    join(FRAMEWORK_DIR, "hal", "api")
-)
-
-env.VariantDirWrap(
-    join("$BUILD_DIR", "FrameworkMbedHal"),
-    join(FRAMEWORK_DIR, "hal", "hal")
-)
 
 env.Append(
     CPPPATH=[
-        join("$BUILD_DIR", "FrameworkMbedHal"),
-        join("$BUILD_DIR", "FrameworkMbedHalApi"),
+        join(FRAMEWORK_DIR, "hal", "api"),
+        join(FRAMEWORK_DIR, "hal", "hal"),
+        join(FRAMEWORK_DIR, "hal", "hal", "storage_abstraction"),
         join("$BUILD_DIR", "FrameworkMbedHalCommon")
     ]
 )
