@@ -57,4 +57,4 @@ install:
     - pio platform install https://github.com/platformio/platform-teensy.git#feature/new-mbed-builder-integration
 
 script:
-    - if [[ $PLATFORMIO_CI_BOARDS_ARGS ]]; then bash -c 'platformio ci $PLATFORMIO_CI_BOARDS_ARGS' -v; else platformio ci --board bbcmicrobit --board efm32pg_stk3401 --board nucleo_l152re --board frdm_kl46z --board samd21_xpro --board lpc11u35; fi
+    - if [[ $PLATFORMIO_CI_BOARDS_ARGS ]]; then bash -c 'platformio ci $PLATFORMIO_CI_BOARDS_ARGS --verbose'; else platformio ci --board bbcmicrobit --board efm32pg_stk3401 --board nucleo_l152re --board frdm_kl46z --board samd21_xpro --board lpc11u35; fi
