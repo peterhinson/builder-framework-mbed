@@ -59,6 +59,7 @@ MBED_VARIANTS = {
     "lpc11u35": "LPC11U35_401",
     "mbuino": "LPC11U24",
     "nrf51_mkit": "NRF51822",
+    "nrf52_mkit": "NRF52832",
     "redBearLab": "RBLAB_NRF51822",
     "redBearLabBLENano": "RBLAB_BLENANO",
     "frdm_kl25z": "KL25Z",
@@ -275,7 +276,7 @@ env.Append(
         join(FRAMEWORK_DIR, "hal", "hal", "storage_abstraction"),
         join(FRAMEWORK_DIR, "hal", "common")
     ]
-)
+)   
 
 if board_type == "nrf51_dk":
     target_dirs = get_mbed_dirs_data(
@@ -300,6 +301,9 @@ if not env.get("LDSCRIPT_PATH"):
     env.Exit(1)
 
 if env.get("PIOPLATFORM") == "nordicnrf51":
+    env.Append(SOFTDEVICEHEX=_find_soft_device_hex(target_dirs))
+
+if env.get("PIOPLATFORM") == "nordicnrf52":
     env.Append(SOFTDEVICEHEX=_find_soft_device_hex(target_dirs))
 
 env.BuildSources(
